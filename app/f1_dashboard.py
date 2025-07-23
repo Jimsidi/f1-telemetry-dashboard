@@ -28,63 +28,97 @@ app.layout = html.Div([
         html.Button("Load Session", id='load-button', n_clicks=0),
     ], style={'margin-bottom': '20px'}),
 
-    # 👇 These two should exist from the start:
-    html.Div(id='driver-select-container', children=[
-        dcc.Dropdown(id='driver-dropdown', multi=True),  # Empty initial dropdown
-        html.Div(id='session-store', style={'display': 'none'})
-    ]),
+    # Placeholders, initially empty/hidden
+    html.Div([
+        html.Label("Select Drivers:", id='driver-label', style={'display': 'none'}),
+        dcc.Dropdown(id='driver-dropdown', multi=True, options=[], value=[], style={'display': 'none'}),
+    ], style={'margin-bottom': '20px'}),
+
+    html.Div([
+        html.Label("Select Telemetry Channel:", id='telemetry-label', style={'display': 'none'}),
+        dcc.Dropdown(
+            id='telemetry-type',
+            options=[
+                {'label': 'Speed', 'value': 'Speed'},
+                {'label': 'Throttle', 'value': 'Throttle'},
+                {'label': 'Brake', 'value': 'Brake'},
+                {'label': 'RPM', 'value': 'RPM'},
+                {'label': 'Gear', 'value': 'nGear'},
+                {'label': 'DRS', 'value': 'DRS'}
+            ],
+            value='Speed',
+            clearable=False,
+            style={'width': '200px', 'display': 'none'}
+        ),
+    ], style={'margin-bottom': '20px'}),
+
+    # Hidden div to store session info
+    html.Div(id='session-store', style={'display': 'none'}, children=""),
 
     dcc.Graph(id='telemetry-plot')
 ])
 
 
 
+
 # Callback to load session and show driver dropdown
 @app.callback(
-    Output('driver-select-container', 'children'),
+    [
+        Output('driver-dropdown', 'options'),
+        Output('driver-dropdown', 'value'),
+        Output('driver-dropdown', 'style'),
+        Output('driver-label', 'style'),
+        Output('telemetry-type', 'style'),
+        Output('telemetry-label', 'style'),
+        Output('session-store', 'children'),
+    ],
     Input('load-button', 'n_clicks'),
     State('year-input', 'value'),
     State('round-input', 'value'),
-    State('session-type', 'value')
+    State('session-type', 'value'),
 )
 def load_session(n_clicks, year, rnd, session_type):
     if n_clicks == 0:
-        return ""
+        # Hide everything initially
+        hidden_style = {'display': 'none'}
+        return [], [], hidden_style, hidden_style, hidden_style, hidden_style, ""
 
     try:
         session = fastf1.get_session(year, rnd, session_type.upper())
         session.load()
         drivers = session.laps['Driver'].unique()
 
-        return html.Div([
-            html.P(f"Loaded: {session.event['EventName']} - {session.name}"),
-            html.Label("Select Drivers:"),
-            dcc.Dropdown(
-                options=[{"label": d, "value": d} for d in drivers],
-                value=drivers[:2].tolist(),  # preselect first two
-                multi=True,
-                id='driver-dropdown'
-            ),
-            html.Div(id='session-store', style={'display': 'none'}, children=f"{year},{rnd},{session_type.upper()}")
-        ])
+        options = [{"label": d, "value": d} for d in drivers]
+        preselected = drivers[:2].tolist()
+
+        # Show dropdowns and labels
+        visible_style = {'display': 'block'}
+
+        session_info = f"{year},{rnd},{session_type.upper()}"
+
+        return options, preselected, visible_style, visible_style, visible_style, visible_style, session_info
+
     except Exception as e:
-        return html.P(f"❌ Error loading session: {str(e)}")
+        # On error, hide dropdowns and clear session info
+        hidden_style = {'display': 'none'}
+        return [], [], hidden_style, hidden_style, hidden_style, hidden_style, ""
+
+
 
 
 # Callback to plot telemetry after driver selection
 @app.callback(
     Output('telemetry-plot', 'figure'),
-    Input('driver-dropdown', 'value'),
-    State('session-store', 'children'),
-    prevent_initial_call=True
+    [Input('driver-dropdown', 'value'),
+     Input('telemetry-type', 'value')],
+    State('session-store', 'children')
 )
-def update_plot(drivers, session_info):
+def update_plot(drivers, telemetry_type, session_info):
     if not drivers or not session_info:
         return {}
 
     year, rnd, session_type = session_info.split(',')
 
-    # Reload session
     session = fastf1.get_session(int(year), int(rnd), session_type)
     session.load()
 
@@ -100,20 +134,13 @@ def update_plot(drivers, session_info):
 
     df = pd.concat(all_tel)
 
-    # Get corner info
-    try:
-        corners_df = session.get_circuit_info().corners
-        corner_distances = corners_df.set_index('Number').T.iloc[[4]].values.flatten()
-    except:
-        corner_distances = []
+    fig = px.line(df, x='Distance', y=telemetry_type, color='Driver',
+                  title=f"{telemetry_type} vs Distance - {session.event['EventName']} {year}")
 
-    fig = px.line(df, x="Distance", y="Speed", color="Driver",
-                  title=f"Speed vs Distance - {session.event['EventName']} {year}")
-
-    for cd in corner_distances:
-        fig.add_vline(x=cd, line_dash="dash", line_color="gray", opacity=0.4)
+    # Optional: add corner markers here
 
     return fig
+
 
 
 if __name__ == "__main__":
