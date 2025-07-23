@@ -8,7 +8,7 @@ from dash import Dash, dcc, html, Input, Output, State
 os.makedirs('cache_dir', exist_ok=True)
 fastf1.Cache.enable_cache('cache_dir')
 
-app = Dash(__name__)
+app = Dash(__name__, suppress_callback_exceptions=True)
 app.title = "F1 Telemetry Comparison"
 
 # Layout
@@ -28,10 +28,15 @@ app.layout = html.Div([
         html.Button("Load Session", id='load-button', n_clicks=0),
     ], style={'margin-bottom': '20px'}),
 
-    html.Div(id='driver-select-container'),
+    # 👇 These two should exist from the start:
+    html.Div(id='driver-select-container', children=[
+        dcc.Dropdown(id='driver-dropdown', multi=True),  # Empty initial dropdown
+        html.Div(id='session-store', style={'display': 'none'})
+    ]),
 
     dcc.Graph(id='telemetry-plot')
 ])
+
 
 
 # Callback to load session and show driver dropdown
@@ -70,7 +75,8 @@ def load_session(n_clicks, year, rnd, session_type):
 @app.callback(
     Output('telemetry-plot', 'figure'),
     Input('driver-dropdown', 'value'),
-    State('session-store', 'children')
+    State('session-store', 'children'),
+    prevent_initial_call=True
 )
 def update_plot(drivers, session_info):
     if not drivers or not session_info:
