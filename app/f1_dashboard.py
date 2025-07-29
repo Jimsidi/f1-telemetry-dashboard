@@ -3,62 +3,78 @@ import fastf1
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from dash import Dash, dcc, html, Input, Output, State
+from dash import Dash, dcc, Input, Output, State, html
+import dash_bootstrap_components as dbc
 
 # Setup cache
 os.makedirs('cache_dir', exist_ok=True)
 fastf1.Cache.enable_cache('cache_dir')
 
-app = Dash(__name__, suppress_callback_exceptions=True)
+app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], suppress_callback_exceptions=True)
 app.title = "F1 Telemetry Comparison"
 
 # Layout
-app.layout = html.Div([
-    html.H1("F1 Telemetry Lap Comparison"),
+app.layout = dbc.Container([
+    dbc.Card([
+        dbc.CardBody([
+            html.H1("🏎️ F1 Telemetry Lap Comparison", className="text-white"),
+            dbc.Row([
+                dbc.Col([
+                    dbc.Label("Year:", className="text-white"),
+                    dbc.Input(id='year-input', type='number', value=2024, min=2018, max=2025),
+                ], width=2),
+                dbc.Col([
+                    dbc.Label("Round:", className="text-white"),
+                    dbc.Input(id='round-input', type='number', value=17, min=1, max=25),
+                ], width=2),
+                dbc.Col([
+                    dbc.Label("Session Type (FP1, FP2, FP3, Q, S, R):", className="text-white"),
+                    dbc.Input(id='session-type', type='text', value='Q'),
+                ], width=3),
+                dbc.Col([
+                    html.Br(),
+                    dbc.Button("Load Session", id='load-button', n_clicks=0, color='danger'),
+                ], width=2),
+            ], className="mb-3"),
+        ])
+    ], color="dark", className="mb-4"),
 
-    html.Div([
-        html.Label("Year:"),
-        dcc.Input(id='year-input', type='number', value=2024, min=2018, max=2025),
+    # Dropdowns
+    dbc.Row([
+        dbc.Col([
+            dbc.Label("Select Drivers:", id='driver-label', className="text-white", style={'display': 'none'}),
+            dcc.Dropdown(id='driver-dropdown', multi=True, options=[], value=[], style={'display': 'none'}),
+        ], width=6),
+        dbc.Col([
+            dbc.Label("Select Telemetry Channel:", id='telemetry-label', className="text-white", style={'display': 'none'}),
+            dcc.Dropdown(
+                id='telemetry-type',
+                options=[
+                    {'label': 'Speed', 'value': 'Speed'},
+                    {'label': 'Throttle', 'value': 'Throttle'},
+                    {'label': 'Brake', 'value': 'Brake'},
+                    {'label': 'RPM', 'value': 'RPM'},
+                    {'label': 'Gear', 'value': 'nGear'},
+                    {'label': 'DRS', 'value': 'DRS'}
+                ],
+                value='Speed',
+                clearable=False,
+                style={'width': '100%', 'display': 'none'}
+            ),
+        ], width=6),
+    ], className="mb-4"),
 
-        html.Label("Round:"),
-        dcc.Input(id='round-input', type='number', value=17, min=1, max=25),
+    html.Div(id='session-store', style={'display': 'none'}),
 
-        html.Label("Session Type (FP1, FP2, FP3, Q, S, R):"),
-        dcc.Input(id='session-type', type='text', value='Q'),
+    # Plot
+    dbc.Card([
+        dbc.CardBody([
+            dcc.Graph(id='telemetry-plot'),
+            dcc.Graph(id='track-map')
+        ])
+    ], color="light")
+], fluid=True, className="bg-dark p-4")
 
-        html.Button("Load Session", id='load-button', n_clicks=0),
-    ], style={'margin-bottom': '20px'}),
-
-    # Placeholders, initially empty/hidden
-    html.Div([
-        html.Label("Select Drivers:", id='driver-label', style={'display': 'none'}),
-        dcc.Dropdown(id='driver-dropdown', multi=True, options=[], value=[], style={'display': 'none'}),
-    ], style={'margin-bottom': '20px'}),
-
-    html.Div([
-        html.Label("Select Telemetry Channel:", id='telemetry-label', style={'display': 'none'}),
-        dcc.Dropdown(
-            id='telemetry-type',
-            options=[
-                {'label': 'Speed', 'value': 'Speed'},
-                {'label': 'Throttle', 'value': 'Throttle'},
-                {'label': 'Brake', 'value': 'Brake'},
-                {'label': 'RPM', 'value': 'RPM'},
-                {'label': 'Gear', 'value': 'nGear'},
-                {'label': 'DRS', 'value': 'DRS'}
-            ],
-            value='Speed',
-            clearable=False,
-            style={'width': '200px', 'display': 'none'}
-        ),
-    ], style={'margin-bottom': '20px'}),
-
-    # Hidden div to store session info
-    html.Div(id='session-store', style={'display': 'none'}, children=""),
-
-    dcc.Graph(id='telemetry-plot'),
-    dcc.Graph(id='track-map')
-])
 
 
 
