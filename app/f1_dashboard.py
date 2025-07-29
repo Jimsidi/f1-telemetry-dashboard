@@ -55,7 +55,8 @@ app.layout = html.Div([
     # Hidden div to store session info
     html.Div(id='session-store', style={'display': 'none'}, children=""),
 
-    dcc.Graph(id='telemetry-plot')
+    dcc.Graph(id='telemetry-plot'),
+    dcc.Graph(id='track-map')
 ])
 
 
@@ -108,38 +109,63 @@ def load_session(n_clicks, year, rnd, session_type):
 
 # Callback to plot telemetry after driver selection
 @app.callback(
-    Output('telemetry-plot', 'figure'),
+    [Output('telemetry-plot', 'figure'),
+     Output('track-map', 'figure')],
     [Input('driver-dropdown', 'value'),
      Input('telemetry-type', 'value')],
     State('session-store', 'children')
 )
 def update_plot(drivers, telemetry_type, session_info):
     if not drivers or not session_info:
-        return {}
+        return {}, {}
 
     year, rnd, session_type = session_info.split(',')
-
     session = fastf1.get_session(int(year), int(rnd), session_type)
     session.load()
 
     all_tel = []
+    track_map_data = pd.DataFrame()
+
     for driver in drivers:
         try:
             lap = session.laps.pick_drivers(driver).pick_fastest()
             tel = lap.get_car_data().add_distance()
             tel['Driver'] = driver
             all_tel.append(tel)
+
+            # For track map, use only the first selected driver
+            if track_map_data.empty:
+                track_map_data = lap.get_telemetry()
+                track_map_data['Driver'] = driver
+
         except Exception as e:
             print(f"Error getting data for {driver}: {e}")
 
     df = pd.concat(all_tel)
 
-    fig = px.line(df, x='Distance', y=telemetry_type, color='Driver',
-                  title=f"{telemetry_type} vs Distance - {session.event['EventName']} {year}")
+    # ---- Plot 1: Telemetry with corner markers ----
+    fig1 = px.line(df, x='Distance', y=telemetry_type, color='Driver',
+                   title=f"{telemetry_type} vs Distance - {session.event['EventName']} {year}")
 
-    # Optional: add corner markers here
+    try:
+        corners_df = session.get_circuit_info().corners
+        corner_distances = corners_df['Distance'].dropna().values
+        for cd in corner_distances:
+            fig1.add_vline(x=cd, line_dash="dash", line_color="gray", opacity=0.3)
+    except Exception as e:
+        print(f"Could not load corner data: {e}")
 
-    return fig
+    # ---- Plot 2: Track Map of first driver ----
+    fig2 = px.scatter(
+        track_map_data,
+        x="X", y="Y",
+        color=telemetry_type,
+        title=f"Track Map - {track_map_data['Driver'].iloc[0]} - Colored by {telemetry_type}",
+        color_continuous_scale=px.colors.sequential.Viridis
+    )
+    fig2.update_yaxes(scaleanchor="x", scaleratio=1)  # Keep aspect ratio correct
+
+    return fig1, fig2
 
 
 
