@@ -2,6 +2,7 @@ import os
 import fastf1
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 from dash import Dash, dcc, html, Input, Output, State
 
 # Setup cache
@@ -155,13 +156,31 @@ def update_plot(drivers, telemetry_type, session_info):
     except Exception as e:
         print(f"Could not load corner data: {e}")
 
-    # ---- Plot 2: Track Map of first driver ----
-    fig2 = px.scatter(
-        track_map_data,
-        x="X", y="Y",
-        color=telemetry_type,
-        title=f"Track Map - {track_map_data['Driver'].iloc[0]} - Colored by {telemetry_type}",
-        color_continuous_scale=px.colors.sequential.Viridis
+    fig2 = go.Figure()
+
+    # Loop over all selected drivers and add their telemetry to the map
+    for driver in drivers:
+        try:
+            lap = session.laps.pick_drivers(driver).pick_fastest()
+            tel = lap.get_telemetry()
+            fig2.add_trace(go.Scatter(
+                x=tel['X'],
+                y=tel['Y'],
+                mode='lines',
+                name=driver,
+                line=dict(width=2),
+                text=[f"{telemetry_type}: {val}" for val in tel[telemetry_type]],
+                hoverinfo="text+name"
+            ))
+        except Exception as e:
+            print(f"Track map error for {driver}: {e}")
+
+    fig2.update_layout(
+        title=f"Track Map - Driver Paths",
+        xaxis_title="X",
+        yaxis_title="Y",
+        yaxis_scaleanchor="x",
+        showlegend=True
     )
     fig2.update_yaxes(scaleanchor="x", scaleratio=1)  # Keep aspect ratio correct
 
