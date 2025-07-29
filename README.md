@@ -20,3 +20,7 @@ python app/f1_dashboard.py
 ```
 
 Then go to http://127.0.0.1:8050/ in your browser.
+
+## 📸 Screenshots
+
+![F1 Dashboard Screenshot](assets/UI.png)
