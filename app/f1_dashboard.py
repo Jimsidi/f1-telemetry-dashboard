@@ -121,44 +121,38 @@ def update_plot(drivers, telemetry_type, session_info):
         return {}, {}
 
     year, rnd, session_type = session_info.split(',')
+
     session = fastf1.get_session(int(year), int(rnd), session_type)
     session.load()
 
+    # --- Telemetry plot (speed, throttle, etc.) ---
     all_tel = []
-    track_map_data = pd.DataFrame()
-
     for driver in drivers:
         try:
             lap = session.laps.pick_drivers(driver).pick_fastest()
             tel = lap.get_car_data().add_distance()
             tel['Driver'] = driver
             all_tel.append(tel)
-
-            # For track map, use only the first selected driver
-            if track_map_data.empty:
-                track_map_data = lap.get_telemetry()
-                track_map_data['Driver'] = driver
-
         except Exception as e:
-            print(f"Error getting data for {driver}: {e}")
+            print(f"Error getting telemetry for {driver}: {e}")
 
-    df = pd.concat(all_tel)
+    if all_tel:
+        df = pd.concat(all_tel)
+        fig1 = px.line(df, x='Distance', y=telemetry_type, color='Driver',
+                       title=f"{telemetry_type} vs Distance - {session.event['EventName']} {year}")
+        # Add corner markers to telemetry plot
+        try:
+            corners_df = session.get_circuit_info().corners
+            corner_distances = corners_df.set_index('Number').T.iloc[[4]].values.flatten()
+            for cd in corner_distances:
+                fig1.add_vline(x=cd, line_dash="dash", line_color="gray", opacity=0.4)
+        except Exception as e:
+            print(f"Error adding corner markers: {e}")
+    else:
+        fig1 = {}
 
-    # ---- Plot 1: Telemetry with corner markers ----
-    fig1 = px.line(df, x='Distance', y=telemetry_type, color='Driver',
-                   title=f"{telemetry_type} vs Distance - {session.event['EventName']} {year}")
-
-    try:
-        corners_df = session.get_circuit_info().corners
-        corner_distances = corners_df['Distance'].dropna().values
-        for cd in corner_distances:
-            fig1.add_vline(x=cd, line_dash="dash", line_color="gray", opacity=0.3)
-    except Exception as e:
-        print(f"Could not load corner data: {e}")
-
+    # --- Track map plot ---
     fig2 = go.Figure()
-
-    # Loop over all selected drivers and add their telemetry to the map
     for driver in drivers:
         try:
             lap = session.laps.pick_drivers(driver).pick_fastest()
@@ -168,25 +162,44 @@ def update_plot(drivers, telemetry_type, session_info):
                 y=tel['Y'],
                 mode='lines',
                 name=driver,
-                line=dict(width=2),
-                text=[f"{telemetry_type}: {val}" for val in tel[telemetry_type]],
+                line=dict(width=3),
+                text=[f"{telemetry_type}: {val:.2f}" for val in tel[telemetry_type]],
                 hoverinfo="text+name"
             ))
         except Exception as e:
             print(f"Track map error for {driver}: {e}")
+
+    # Add turn labels
+    try:
+        corners = session.get_circuit_info().corners
+        for _, row in corners.iterrows():
+            fig2.add_annotation(
+                x=row['X'],
+                y=row['Y'],
+                text=f"Turn {int(row['Number'])}",
+                showarrow=True,
+                arrowhead=2,
+                ax=0,
+                ay=-20,
+                font=dict(size=10, color="black"),
+                bgcolor="rgba(255,255,255,0.7)",
+                bordercolor="black",
+                borderwidth=1
+            )
+    except Exception as e:
+        print(f"Error adding turn labels: {e}")
 
     fig2.update_layout(
         title=f"Track Map - Driver Paths",
         xaxis_title="X",
         yaxis_title="Y",
         yaxis_scaleanchor="x",
+        width = 1100,
+        height = 900,
         showlegend=True
     )
-    fig2.update_yaxes(scaleanchor="x", scaleratio=1)  # Keep aspect ratio correct
 
     return fig1, fig2
-
-
 
 if __name__ == "__main__":
     app.run(debug=True)
