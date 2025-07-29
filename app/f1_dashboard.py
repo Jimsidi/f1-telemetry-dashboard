@@ -10,14 +10,30 @@ import dash_bootstrap_components as dbc
 os.makedirs('cache_dir', exist_ok=True)
 fastf1.Cache.enable_cache('cache_dir')
 
-app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], suppress_callback_exceptions=True)
+app = Dash(__name__,  assets_folder='../assets', external_stylesheets=[dbc.themes.BOOTSTRAP], suppress_callback_exceptions=True)
 app.title = "F1 Telemetry Comparison"
 
 # Layout
 app.layout = dbc.Container([
     dbc.Card([
         dbc.CardBody([
-            html.H1("🏎️ F1 Telemetry Lap Comparison", className="text-white"),
+            dbc.Row([
+                dbc.Col(
+                    html.A(
+                        html.Img(src='../assets/f1-logo.png', style={'height': '80px', 'cursor': 'pointer'}),
+                        href='https://www.formula1.com',
+                        target='_blank',
+                        rel='no opener no referrer'
+                    ),
+                    width="auto",
+                    className="d-flex align-items-center",
+                    style={'padding-right': '10px'}
+                ),
+                dbc.Col(
+                    html.H1("🏎️ F1 Telemetry Lap Comparison", className="text-white m-0"),
+                    className="d-flex align-items-center"
+                )
+            ], align="center", className="mb-3 g-0"),
             dbc.Row([
                 dbc.Col([
                     dbc.Label("Year:", className="text-white"),
@@ -34,7 +50,7 @@ app.layout = dbc.Container([
                 dbc.Col([
                     html.Br(),
                     dbc.Button("Load Session", id='load-button', n_clicks=0, color='danger'),
-                ], width=2),
+                ], width=2,className="d-flex align-items-end")
             ], className="mb-3"),
         ])
     ], color="dark", className="mb-4"),
