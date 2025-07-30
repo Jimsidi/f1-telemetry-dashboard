@@ -31,8 +31,21 @@ layout = dbc.Container([
                     dbc.Input(id='round-input', type='number', value=17, min=1, max=25),
                 ], width=2),
                 dbc.Col([
-                    dbc.Label("Session Type (FP1, FP2, FP3, Q, S, R):", className="text-white"),
-                    dbc.Input(id='session-type', type='text', value='Q'),
+                    dbc.Label("Session Type:", className="text-white"),
+                    dcc.Dropdown(
+                        id='session-type',
+                        options=[
+                            {'label': 'FP1', 'value': 'FP1'},
+                            {'label': 'FP2', 'value': 'FP2'},
+                            {'label': 'FP3', 'value': 'FP3'},
+                            {'label': 'Qualifying (Q)', 'value': 'Q'},
+                            {'label': 'Sprint (S)', 'value': 'S'},
+                            {'label': 'Race (R)', 'value': 'R'}
+                        ],
+                        value='Q',
+                        clearable=False,
+                        style={'color': '#000000'}  # To make text visible inside dropdown
+                    ),
                 ], width=3),
                 dbc.Col([
                     html.Br(),
@@ -70,10 +83,14 @@ layout = dbc.Container([
     html.Div(id='session-store', style={'display': 'none'}),
 
     # Plot
-    dbc.Card([
-        dbc.CardBody([
+    dbc.CardBody([
+        dcc.Loading(
             dcc.Graph(id='telemetry-plot'),
-            dcc.Graph(id='track-map')
-        ])
-    ], color="light")
+            type='circle'
+        ),
+        dcc.Loading(
+            dcc.Graph(id='track-map'),
+            type='circle'
+        )
+    ])
 ], fluid=True, className="bg-dark p-4")
