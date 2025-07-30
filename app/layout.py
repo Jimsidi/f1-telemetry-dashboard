@@ -61,6 +61,12 @@ layout = dbc.Container([
             dbc.Label("Select Drivers:", id='driver-label', className="text-white", style={'display': 'none'}),
             dcc.Dropdown(id='driver-dropdown', multi=True, options=[], value=[], style={'display': 'none'}),
         ], width=6),
+        dbc.Row([
+            dbc.Col([
+                dbc.Label("Select Laps:", id='lap-label', className="text-white", style={'display': 'none'}),
+                dcc.Dropdown(id='lap-dropdown', multi=True, options=[], value=[], style={'display': 'none'}),
+            ], width=6),
+        ], className="mb-4"),
         dbc.Col([
             dbc.Label("Select Telemetry Channel:", id='telemetry-label', className="text-white", style={'display': 'none'}),
             dcc.Dropdown(
