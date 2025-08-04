@@ -1,5 +1,6 @@
-from dash import html, dcc
+from dash import html, dcc, dash_table
 import dash_bootstrap_components as dbc
+
 
 layout = dbc.Container([
     dbc.Card([
@@ -104,6 +105,42 @@ layout = dbc.Container([
             ], color="dark", inverse=True, className="shadow-sm mb-4"),
             width=12
         ),
+dbc.Col(
+                dbc.Card([
+                    dbc.CardHeader("Lap Time Deltas"),
+                    dbc.CardBody([
+                        dash_table.DataTable(
+                            id='lap-delta-table',
+                            columns=[
+                                {"name": "Driver", "id": "Driver"},
+                                {"name": "Lap Time", "id": "LapTime"},
+                                {"name": "Delta (s)", "id": "Delta"},
+                            ],
+                            style_cell={'textAlign': 'center', 'color': 'white', 'backgroundColor': '#222'},
+                            style_header={'fontWeight': 'bold', 'backgroundColor': '#444', 'color': 'white'},
+                            style_data_conditional=[
+                                {
+                                    'if': {
+                                        'filter_query': '{Delta} > 0',
+                                        'column_id': 'Delta'
+                                    },
+                                    'color': 'red',
+                                },
+                                {
+                                    'if': {
+                                        'filter_query': '{Delta} <= 0',
+                                        'column_id': 'Delta'
+                                    },
+                                    'color': 'lime',
+                                },
+                            ],
+                            style_table={'overflowX': 'auto'},
+                            page_size=10,
+                        )
+                    ])
+                ], color="dark", inverse=True, className="mb-4 shadow-sm"),
+                width=12
+            ),
         dbc.Col(
             dbc.Card([
                 dbc.CardHeader("Weather Chart"),

@@ -1,8 +1,9 @@
-from dash import Input, Output, State
+from dash import Input, Output, State, dash_table
 import fastf1
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+
 
 def register_callbacks(app):
     @app.callback(
@@ -18,6 +19,7 @@ def register_callbacks(app):
             Output('lap-dropdown', 'value'),
             Output('lap-dropdown', 'style'),
             Output('lap-label', 'style'),
+            Output('lap-delta-table', 'data'),
         ],
         Input('load-button', 'n_clicks'),
         State('year-input', 'value'),
@@ -29,8 +31,7 @@ def register_callbacks(app):
         visible_style = {'display': 'block'}
 
         if n_clicks == 0:
-            # Initial state, hide all dynamic UI elements
-            return [], [], hidden_style, hidden_style, hidden_style, hidden_style, "", [], [], hidden_style, hidden_style
+            return [], [], hidden_style, hidden_style, hidden_style, hidden_style, "", [], [], hidden_style, hidden_style, []
 
         try:
             session = fastf1.get_session(year, rnd, session_type.upper())
@@ -40,22 +41,47 @@ def register_callbacks(app):
             options = [{"label": d, "value": d} for d in drivers]
             preselected = drivers[:2].tolist()
 
-            # Lap selection: show first 2 laps as default
+            # Lap selection
             lap_numbers = session.laps['LapNumber'].unique()
             lap_options = [{'label': f"Lap {int(lap)}", 'value': int(lap)} for lap in lap_numbers]
             default_laps = [int(lap) for lap in lap_numbers[:2]]
 
             session_info = f"{year},{rnd},{session_type.upper()}"
 
+            # ✅ Build Lap Delta Table
+            try:
+                fastest_laps = session.laps.pick_quicklaps().copy()
+                fastest_laps['LapTime'] = pd.to_timedelta(fastest_laps['LapTime'])
+
+                fastest_laps['LapTimeSeconds'] = fastest_laps['LapTime'].apply(lambda x: x.total_seconds())
+                fastest_laps = fastest_laps.sort_values('LapTimeSeconds')
+                best_time = fastest_laps.iloc[0]['LapTimeSeconds']
+                fastest_laps['Delta'] = fastest_laps['LapTimeSeconds'] - best_time
+
+                def format_laptime(td):
+                    total = td.total_seconds()
+                    minutes = int(total // 60)
+                    seconds = total % 60
+                    return f"{minutes}:{seconds:05.2f}"
+
+                fastest_laps['LapTimeStr'] = fastest_laps['LapTime'].apply(format_laptime)
+                lap_delta_data = fastest_laps[['Driver', 'LapTimeStr', 'Delta']].rename(
+                    columns={'LapTimeStr': 'LapTime'}).to_dict('records')
+
+            except Exception as e:
+                print(f"Lap delta build error: {e}")
+                lap_delta_data = []
+
             return (
                 options, preselected, visible_style, visible_style,
                 visible_style, visible_style, session_info,
-                lap_options, default_laps, visible_style, visible_style
+                lap_options, default_laps, visible_style, visible_style,
+                lap_delta_data
             )
 
         except Exception as e:
             print(f"Error loading session: {e}")
-            return [], [], hidden_style, hidden_style, hidden_style, hidden_style, "", [], [], hidden_style, hidden_style
+            return [], [], hidden_style, hidden_style, hidden_style, hidden_style, "", [], [], hidden_style, hidden_style, []
 
     # Callback to plot telemetry after driver selection
     @app.callback(
