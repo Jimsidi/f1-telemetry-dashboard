@@ -17,7 +17,10 @@ A Dash app that loads telemetry data from Formula 1 sessions using FastF1.
 - Live weather chart showing:
   - Air temperature
   - Track temperature
-  - Humidity
+- Lap delta table with:
+  - Fastest lap times comparison
+  - Color-coded deltas
+  - Tire compound info with matching colors
 - F1-themed UI with Dash + Bootstrap (black/red/white palette)
 - Loading spinners for smoother user experience
 - FastF1 caching enabled for performance
