@@ -60,7 +60,8 @@ def register_callbacks(app):
     # Callback to plot telemetry after driver selection
     @app.callback(
         [Output('telemetry-plot', 'figure'),
-         Output('track-map', 'figure')],
+         Output('track-map', 'figure'),
+         Output('weather-plot', 'figure')],
         [Input('driver-dropdown', 'value'),
          Input('telemetry-type', 'value'),
          Input('lap-dropdown', 'value')],
@@ -68,7 +69,7 @@ def register_callbacks(app):
     )
     def update_plot(drivers, telemetry_type, laps, session_info):
         if not drivers or not laps or not session_info:
-            return {}, {}
+            return {}, {}, {}
 
         year, rnd, session_type = session_info.split(',')
         session = fastf1.get_session(int(year), int(rnd), session_type)
@@ -110,22 +111,26 @@ def register_callbacks(app):
             except Exception as e:
                 print(f"Track map error for {driver}: {e}")
 
-            # Add turn labels
+            # Turn labels
             try:
                 corners = session.get_circuit_info().corners
-                for _, row in corners.iterrows():
+                for i, (_, row) in enumerate(corners.iterrows()):
+                    offset = 20 if i % 2 == 0 else -20  # Zigzag vertical position
+
                     fig2.add_annotation(
                         x=row['X'],
                         y=row['Y'],
-                        text=f"Turn {int(row['Number'])}",
+                        text=f"Turn{int(row['Number'])}",
                         showarrow=True,
-                        arrowhead=2,
-                        ax=0,
-                        ay=-20,
-                        font=dict(size=10, color="black"),
-                        bgcolor="rgba(255,255,255,0.7)",
+                        arrowhead=1,
+                        arrowsize=1,
+                        ax=20 if i % 2 == 0 else -20,
+                        ay=offset,
+                        font=dict(size=9, color="black"),
+                        bgcolor="rgba(255,255,255,0.6)",
                         bordercolor="black",
-                        borderwidth=1
+                        borderwidth=1.5,
+                        opacity=0.5
                     )
             except Exception as e:
                 print(f"Error adding turn labels: {e}")
@@ -140,5 +145,15 @@ def register_callbacks(app):
             showlegend=True
         )
 
-        return fig1, fig2
+        # --- Weather plot ---
+        try:
+            weather_df = session.weather_data
+            weather_fig = px.line(weather_df, x='Time', y=['AirTemp', 'TrackTemp'],
+                                  labels={'value': 'Temperature (°C)', 'Time': 'Session Time'},
+                                  title="Air vs Track Temperature Over Time")
+        except Exception as e:
+            print(f"Weather plot error: {e}")
+            weather_fig = {}
+
+        return fig1, fig2, weather_fig
 

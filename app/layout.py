@@ -98,5 +98,17 @@ layout = dbc.Container([
             dcc.Graph(id='track-map'),
             type='circle'
         )
-    ])
+    ]),
+
+    dbc.Card([
+        dbc.CardBody([
+            html.H4("Weather Conditions", className="card-title"),
+            dcc.Loading(
+                dcc.Graph(id='weather-plot'),
+                type='circle'
+            )
+        ])
+    ], color="light")
+
+
 ], fluid=True, className="bg-dark p-4")
