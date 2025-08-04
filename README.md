@@ -25,7 +25,7 @@ A Dash app that loads telemetry data from Formula 1 sessions using FastF1.
 - Loading spinners for smoother user experience
 - FastF1 caching enabled for performance
 
-> 🛠️ More features coming soon: sector time deltas, strategy overlays, tire compounds, etc.
+> 🛠️ More features coming soon: sector time deltas, strategy overlays etc.
 
 ## 🚀 Usage
 
