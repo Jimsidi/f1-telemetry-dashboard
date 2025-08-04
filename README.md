@@ -3,14 +3,26 @@
 A Dash app that loads telemetry data from Formula 1 sessions using FastF1.
 
 ## 💡 Features
-- Select season, round, and session type (Q, R, FP1 etc)
-- View driver telemetry for fastest lap
-- Visual comparison of speed/throttle/brake/RPM/gear/DRS
-- Track map with color-coded driver lines
-- Corner markers and turn labels on telemetry plot
-- Bootstrap-based UI theme (F1-inspired red/black/white)
 
-> ℹ️ More features coming soon!
+- Select season, round, and session type (FP1, FP2, FP3, Q, S, R) via dropdown
+- Load and compare telemetry from the fastest lap for multiple drivers
+- View and compare key telemetry channels:
+  - Speed, Throttle, Brake, RPM, Gear, DRS
+- Track map:
+  - Color-coded driver lines
+  - Smart turn number annotations that alternate to avoid overlap
+- Telemetry plot with:
+  - Interactive lap data
+  - Circuit corner markers
+- Live weather chart showing:
+  - Air temperature
+  - Track temperature
+  - Humidity
+- F1-themed UI with Dash + Bootstrap (black/red/white palette)
+- Loading spinners for smoother user experience
+- FastF1 caching enabled for performance
+
+> 🛠️ More features coming soon: sector time deltas, strategy overlays, tire compounds, etc.
 
 ## 🚀 Usage
 
