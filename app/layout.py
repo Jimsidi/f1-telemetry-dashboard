@@ -115,6 +115,7 @@ dbc.Col(
                                 {"name": "Driver", "id": "Driver"},
                                 {"name": "Lap Time", "id": "LapTime"},
                                 {"name": "Delta (s)", "id": "Delta"},
+                                {"name": "Compound", "id": "Compound"},
                             ],
                             style_cell={'textAlign': 'center', 'color': 'white', 'backgroundColor': '#222'},
                             style_header={'fontWeight': 'bold', 'backgroundColor': '#444', 'color': 'white'},
@@ -133,6 +134,31 @@ dbc.Col(
                                     },
                                     'color': 'lime',
                                 },
+                                    {
+                                        'if': {'filter_query': '{Compound} = "SOFT"', 'column_id': 'Compound'},
+                                        'backgroundColor': '#FF7F7F',
+                                        'color': 'black'
+                                    },
+                                    {
+                                        'if': {'filter_query': '{Compound} = "MEDIUM"', 'column_id': 'Compound'},
+                                        'backgroundColor': '#FFD966',
+                                        'color': 'black'
+                                    },
+                                    {
+                                        'if': {'filter_query': '{Compound} = "HARD"', 'column_id': 'Compound'},
+                                        'backgroundColor': '#A9D18E',
+                                        'color': 'black'
+                                    },
+                                    {
+                                        'if': {'filter_query': '{Compound} = "INTER"', 'column_id': 'Compound'},
+                                        'backgroundColor': '#5BC0DE',
+                                        'color': 'black'
+                                    },
+                                    {
+                                        'if': {'filter_query': '{Compound} = "WET"', 'column_id': 'Compound'},
+                                        'backgroundColor': '#4472C4',
+                                        'color': 'white'
+                                    }
                             ],
                             style_table={'overflowX': 'auto'},
                             page_size=10,

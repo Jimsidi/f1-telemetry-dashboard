@@ -48,7 +48,7 @@ def register_callbacks(app):
 
             session_info = f"{year},{rnd},{session_type.upper()}"
 
-            # ✅ Build Lap Delta Table
+            # Lap Delta Table
             try:
                 fastest_laps = session.laps.pick_quicklaps().copy()
                 fastest_laps['LapTime'] = pd.to_timedelta(fastest_laps['LapTime'])
@@ -65,8 +65,11 @@ def register_callbacks(app):
                     return f"{minutes}:{seconds:05.2f}"
 
                 fastest_laps['LapTimeStr'] = fastest_laps['LapTime'].apply(format_laptime)
-                lap_delta_data = fastest_laps[['Driver', 'LapTimeStr', 'Delta']].rename(
-                    columns={'LapTimeStr': 'LapTime'}).to_dict('records')
+
+                #Compound column to final dict
+                lap_delta_data = fastest_laps[['Driver', 'LapTimeStr', 'Delta', 'Compound']].rename(
+                    columns={'LapTimeStr': 'LapTime'}
+                ).to_dict('records')
 
             except Exception as e:
                 print(f"Lap delta build error: {e}")
