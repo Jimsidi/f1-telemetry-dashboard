@@ -38,4 +38,6 @@ Then go to http://127.0.0.1:8050/ in your browser.
 
 ## 📸 Screenshots
 
-![F1 Dashboard Screenshot](app/assets/UI.png)
+![F1 Dashboard Screenshot 1](app/assets/UI.png)
+![F1 Dashboard Screenshot 2](app/assets/UI_1.png)
+![F1 Dashboard Screenshot 3](app/assets/UI_2.png)
