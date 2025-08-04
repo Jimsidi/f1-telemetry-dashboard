@@ -89,26 +89,29 @@ layout = dbc.Container([
     html.Div(id='session-store', style={'display': 'none'}),
 
     # Plot
-    dbc.CardBody([
-        dcc.Loading(
-            dcc.Graph(id='telemetry-plot'),
-            type='circle'
+    dbc.Row([
+        dbc.Col(
+            dbc.Card([
+                dbc.CardHeader("Telemetry Plot"),
+                dbc.CardBody([dcc.Graph(id='telemetry-plot')])
+            ], color="dark", inverse=True, className="shadow-sm mb-4"),
+            width=12
         ),
-        dcc.Loading(
-            dcc.Graph(id='track-map'),
-            type='circle'
+        dbc.Col(
+            dbc.Card([
+                dbc.CardHeader("Track Map"),
+                dbc.CardBody([dcc.Graph(id='track-map')])
+            ], color="dark", inverse=True, className="shadow-sm mb-4"),
+            width=12
+        ),
+        dbc.Col(
+            dbc.Card([
+                dbc.CardHeader("Weather Chart"),
+                dbc.CardBody([dcc.Graph(id='weather-plot')])
+            ], color="dark", inverse=True, className="shadow-sm mb-4"),
+            width=12
         )
-    ]),
-
-    dbc.Card([
-        dbc.CardBody([
-            html.H4("Weather Conditions", className="card-title"),
-            dcc.Loading(
-                dcc.Graph(id='weather-plot'),
-                type='circle'
-            )
-        ])
-    ], color="light")
+    ])
 
 
 ], fluid=True, className="bg-dark p-4")
