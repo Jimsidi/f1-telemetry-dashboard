@@ -1,4 +1,4 @@
-from dash import Input, Output, State, dash_table
+from dash import Input, Output, State
 import fastf1
 import pandas as pd
 import plotly.express as px
@@ -90,7 +90,9 @@ def register_callbacks(app):
     @app.callback(
         [Output('telemetry-plot', 'figure'),
          Output('track-map', 'figure'),
-         Output('weather-plot', 'figure')],
+         Output('weather-plot', 'figure'),
+         Output('sector-comparison-chart', 'figure'),
+         Output('sector-comparison-table', 'data')],
         [Input('driver-dropdown', 'value'),
          Input('telemetry-type', 'value'),
          Input('lap-dropdown', 'value')],
@@ -98,7 +100,7 @@ def register_callbacks(app):
     )
     def update_plot(drivers, telemetry_type, laps, session_info):
         if not drivers or not laps or not session_info:
-            return {}, {}, {}
+            return {}, {}, {}, {}, []
 
         year, rnd, session_type = session_info.split(',')
         session = fastf1.get_session(int(year), int(rnd), session_type)
@@ -184,5 +186,79 @@ def register_callbacks(app):
             print(f"Weather plot error: {e}")
             weather_fig = {}
 
-        return fig1, fig2, weather_fig
+        # --- Sector Comparison ---
+        try:
+            sector_data = []
+
+            for driver in drivers:
+                lap = session.laps.pick_drivers(driver).pick_fastest()
+                s1 = lap['Sector1Time'].total_seconds()
+                s2 = lap['Sector2Time'].total_seconds()
+                s3 = lap['Sector3Time'].total_seconds()
+                sector_data.append({
+                    "Driver": driver,
+                    "Sector 1": s1,
+                    "Sector 2": s2,
+                    "Sector 3": s3
+                })
+
+            df_sectors = pd.DataFrame(sector_data)
+
+            sector_fig = px.bar(
+                df_sectors,
+                x='Driver',
+                y=['Sector 1', 'Sector 2', 'Sector 3'],
+                title="Sector Time Comparison (s)",
+                labels={"value": "Time (s)", "variable": "Sector"},
+                barmode="stack"
+            )
+
+            sector_fig.update_layout(legend_title_text='Sector')
+        except Exception as e:
+            print(f"Sector comparison error: {e}")
+            sector_fig = {}
+
+        # --- Sector Comparison Table ---
+        try:
+            sector_data = session.laps.pick_quicklaps().copy()
+            sector_data['Sector1Time'] = pd.to_timedelta(sector_data['Sector1Time'])
+            sector_data['Sector2Time'] = pd.to_timedelta(sector_data['Sector2Time'])
+            sector_data['Sector3Time'] = pd.to_timedelta(sector_data['Sector3Time'])
+
+            # Make an explicit copy here to avoid SettingWithCopyWarning
+            sector_data = sector_data[sector_data['Driver'].isin(drivers)].copy()
+
+            sector_data['Sector1Sec'] = sector_data['Sector1Time'].apply(lambda x: x.total_seconds())
+            sector_data['Sector2Sec'] = sector_data['Sector2Time'].apply(lambda x: x.total_seconds())
+            sector_data['Sector3Sec'] = sector_data['Sector3Time'].apply(lambda x: x.total_seconds())
+
+            # Get best per sector
+            best_s1 = sector_data['Sector1Sec'].min()
+            best_s2 = sector_data['Sector2Sec'].min()
+            best_s3 = sector_data['Sector3Sec'].min()
+
+            def fmt(td):  # Format timedelta
+                sec = td.total_seconds()
+                return f"{int(sec // 60)}:{sec % 60:05.2f}"
+
+            sector_table = []
+            for _, row in sector_data.iterrows():
+                sector_table.append({
+                    'Driver': row['Driver'],
+                    'Sector1': fmt(row['Sector1Time']),
+                    'DeltaS1': round(row['Sector1Sec'] - best_s1, 3),
+                    'BestS1': row['Sector1Sec'] == best_s1,  # Flag for best sector 1
+                    'Sector2': fmt(row['Sector2Time']),
+                    'DeltaS2': round(row['Sector2Sec'] - best_s2, 3),
+                    'BestS2': row['Sector2Sec'] == best_s2,
+                    'Sector3': fmt(row['Sector3Time']),
+                    'DeltaS3': round(row['Sector3Sec'] - best_s3, 3),
+                    'BestS3': row['Sector3Sec'] == best_s3,
+                })
+
+        except Exception as e:
+            print(f"Error building sector table: {e}")
+            sector_table = []
+
+        return fig1, fig2, weather_fig, sector_fig, sector_table
 

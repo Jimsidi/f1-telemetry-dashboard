@@ -105,7 +105,7 @@ layout = dbc.Container([
             ], color="dark", inverse=True, className="shadow-sm mb-4"),
             width=12
         ),
-dbc.Col(
+            dbc.Col(
                 dbc.Card([
                     dbc.CardHeader("Lap Time Deltas"),
                     dbc.CardBody([
@@ -173,8 +173,86 @@ dbc.Col(
                 dbc.CardBody([dcc.Graph(id='weather-plot')])
             ], color="dark", inverse=True, className="shadow-sm mb-4"),
             width=12
+        ),
+        dbc.Col(
+            dbc.Card([
+                dbc.CardHeader("Sector Time Comparison"),
+                dbc.CardBody([
+                    dcc.Graph(id='sector-comparison-chart')
+                ])
+            ], color="dark", inverse=True, className="shadow-sm mb-4"),
+            width=12
+        ),
+        dbc.Col(
+            dbc.Card([
+                dbc.CardHeader("Sector Comparison Table"),
+                dbc.CardBody([
+                    dash_table.DataTable(
+                        id='sector-comparison-table',
+                        columns=[
+                            {"name": "Driver", "id": "Driver"},
+                            {"name": "S1 Time", "id": "Sector1"},
+                            {"name": "Δ S1", "id": "DeltaS1"},
+                            {"name": "S2 Time", "id": "Sector2"},
+                            {"name": "Δ S2", "id": "DeltaS2"},
+                            {"name": "S3 Time", "id": "Sector3"},
+                            {"name": "Δ S3", "id": "DeltaS3"},
+                        ],
+                        style_cell={'textAlign': 'center', 'color': 'white', 'backgroundColor': '#222'},
+                        style_header={'fontWeight': 'bold', 'backgroundColor': '#444', 'color': 'white'},
+                        style_data_conditional=[
+                            # Existing delta color rules
+                            {
+                                'if': {'column_id': 'DeltaS1', 'filter_query': '{DeltaS1} > 0'},
+                                'color': 'red'
+                            },
+                            {
+                                'if': {'column_id': 'DeltaS2', 'filter_query': '{DeltaS2} > 0'},
+                                'color': 'red'
+                            },
+                            {
+                                'if': {'column_id': 'DeltaS3', 'filter_query': '{DeltaS3} > 0'},
+                                'color': 'red'
+                            },
+                            {
+                                'if': {'column_id': 'DeltaS1', 'filter_query': '{DeltaS1} <= 0'},
+                                'color': 'lime'
+                            },
+                            {
+                                'if': {'column_id': 'DeltaS2', 'filter_query': '{DeltaS2} <= 0'},
+                                'color': 'lime'
+                            },
+                            {
+                                'if': {'column_id': 'DeltaS3', 'filter_query': '{DeltaS3} <= 0'},
+                                'color': 'lime'
+                            },
+
+                            # New highlight for best sector times themselves:
+                            {
+                                'if': {'column_id': 'Sector1', 'filter_query': '{DeltaS1} = 0'},
+                                'backgroundColor': '#28a745',  # Bootstrap success green
+                                'color': 'white',
+                                'fontWeight': 'bold',
+                            },
+                            {
+                                'if': {'column_id': 'Sector2', 'filter_query': '{DeltaS2} = 0'},
+                                'backgroundColor': '#28a745',
+                                'color': 'white',
+                                'fontWeight': 'bold',
+                            },
+                            {
+                                'if': {'column_id': 'Sector3', 'filter_query': '{DeltaS3} = 0'},
+                                'backgroundColor': '#28a745',
+                                'color': 'white',
+                                'fontWeight': 'bold',
+                            },
+                        ],
+                        style_table={'overflowX': 'auto'},
+                        page_size=10,
+                    )
+                ])
+            ], color="dark", inverse=True, className="mb-4 shadow-sm"),
+            width=12
         )
     ])
-
-
 ], fluid=True, className="bg-dark p-4")
