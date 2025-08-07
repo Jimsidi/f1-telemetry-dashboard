@@ -1,4 +1,4 @@
-from dash import Input, Output, State
+from dash import Input, Output, State, MATCH
 import fastf1
 import pandas as pd
 import plotly.express as px
@@ -261,4 +261,14 @@ def register_callbacks(app):
             sector_table = []
 
         return fig1, fig2, weather_fig, sector_fig, sector_table
+
+    @app.callback(
+        Output({"type": "collapse-body", "section": MATCH}, "is_open"),
+        Input({"type": "collapse-toggle", "section": MATCH}, "n_clicks"),
+        State({"type": "collapse-body", "section": MATCH}, "is_open"),
+        prevent_initial_call=True
+    )
+    def toggle_collapse(n, is_open):
+        return not is_open
+
 

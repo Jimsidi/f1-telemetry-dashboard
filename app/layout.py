@@ -91,20 +91,50 @@ layout = dbc.Container([
 
     # Plot
     dbc.Row([
-        dbc.Col(
+        dbc.Col([
             dbc.Card([
-                dbc.CardHeader("Telemetry Plot"),
-                dbc.CardBody([dcc.Graph(id='telemetry-plot')])
-            ], color="dark", inverse=True, className="shadow-sm mb-4"),
-            width=12
-        ),
-        dbc.Col(
+                dbc.CardHeader(
+                    dbc.Row([
+                        dbc.Col(html.H5("Telemetry Plot", className="mb-0"), width="auto"),
+                        dbc.Col(
+                            html.Button("▼", id={"type": "collapse-toggle", "section": "telemetry"}, className="btn btn-sm btn-secondary",
+                                        n_clicks=0),
+                            width="auto",
+                            style={"textAlign": "right"}
+                        )
+                    ], justify="between")
+                ),
+                dbc.Collapse(
+                    dbc.CardBody([
+                        dcc.Graph(id='telemetry-plot')
+                    ]),
+                    id={"type": "collapse-body", "section": "telemetry"},
+                    is_open=True
+                )
+            ], color="dark", inverse=True, className="shadow-sm mb-4")
+        ], width=12),
+        dbc.Col([
             dbc.Card([
-                dbc.CardHeader("Track Map"),
-                dbc.CardBody([dcc.Graph(id='track-map')])
-            ], color="dark", inverse=True, className="shadow-sm mb-4"),
-            width=12
-        ),
+                dbc.CardHeader(
+                    dbc.Row([
+                        dbc.Col(html.H5("Track Map", className="mb-0"), width="auto"),
+                        dbc.Col(
+                            html.Button("▼", id={"type": "collapse-toggle", "section": "track"}, className="btn btn-sm btn-secondary",
+                                        n_clicks=0),
+                            width="auto",
+                            style={"textAlign": "right"}
+                        )
+                    ], justify="between")
+                ),
+                dbc.Collapse(
+                    dbc.CardBody([
+                        dcc.Graph(id='track-map')
+                    ]),
+                    id={"type": "collapse-body", "section": "track"},
+                    is_open=True
+                )
+            ], color="dark", inverse=True, className="shadow-sm mb-4")
+        ], width=12),
             dbc.Col(
                 dbc.Card([
                     dbc.CardHeader("Lap Time Deltas"),
@@ -167,22 +197,50 @@ layout = dbc.Container([
                 ], color="dark", inverse=True, className="mb-4 shadow-sm"),
                 width=12
             ),
-        dbc.Col(
+        dbc.Col([
             dbc.Card([
-                dbc.CardHeader("Weather Chart"),
-                dbc.CardBody([dcc.Graph(id='weather-plot')])
-            ], color="dark", inverse=True, className="shadow-sm mb-4"),
-            width=12
-        ),
-        dbc.Col(
+                dbc.CardHeader(
+                    dbc.Row([
+                        dbc.Col(html.H5("Weather Chart", className="mb-0"), width="auto"),
+                        dbc.Col(
+                            html.Button("▼", id={"type": "collapse-toggle", "section": "weather"}, className="btn btn-sm btn-secondary",
+                                        n_clicks=0),
+                            width="auto",
+                            style={"textAlign": "right"}
+                        )
+                    ], justify="between")
+                ),
+                dbc.Collapse(
+                    dbc.CardBody([
+                        dcc.Graph(id='weather-plot')
+                    ]),
+                    id={"type": "collapse-body", "section": "weather"},
+                    is_open=True
+                )
+            ], color="dark", inverse=True, className="shadow-sm mb-4")
+        ], width=12),
+        dbc.Col([
             dbc.Card([
-                dbc.CardHeader("Sector Time Comparison"),
-                dbc.CardBody([
-                    dcc.Graph(id='sector-comparison-chart')
-                ])
-            ], color="dark", inverse=True, className="shadow-sm mb-4"),
-            width=12
-        ),
+                dbc.CardHeader(
+                    dbc.Row([
+                        dbc.Col(html.H5("Sector Time Comparison", className="mb-0"), width="auto"),
+                        dbc.Col(
+                            html.Button("▼", id={"type": "collapse-toggle", "section": "sector"}, className="btn btn-sm btn-secondary",
+                                        n_clicks=0),
+                            width="auto",
+                            style={"textAlign": "right"}
+                        )
+                    ], justify="between")
+                ),
+                dbc.Collapse(
+                    dbc.CardBody([
+                        dcc.Graph(id='sector-comparison-chart')
+                    ]),
+                    id={"type": "collapse-body", "section": "sector"},
+                    is_open=True
+                )
+            ], color="dark", inverse=True, className="shadow-sm mb-4")
+        ], width=12),
         dbc.Col(
             dbc.Card([
                 dbc.CardHeader("Sector Comparison Table"),
