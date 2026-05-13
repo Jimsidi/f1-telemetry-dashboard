@@ -8,10 +8,10 @@ layout = dbc.Container([
             dbc.Row([
                 dbc.Col(
                     html.A(
-                        html.Img(src='assets/f1-logo.png', style={'height': '80px', 'cursor': 'pointer'}),
+                        html.Span('🏎️', style={'font-size': '60px', 'cursor': 'pointer'}),
                         href='https://www.formula1.com',
                         target='_blank',
-                        rel='no opener no referrer'
+                        rel='noopener noreferrer'
                     ),
                     width="auto",
                     className="d-flex align-items-center",
