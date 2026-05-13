@@ -63,15 +63,16 @@ Every push to `main` triggers the GitHub Actions workflow which installs depende
 f1-telemetry-dashboard/
 ├── app/
 │   ├── __init__.py       # App initialization
-│   ├── run.py            # Entry point (local dev)
 │   ├── layout.py         # UI layout
 │   ├── callbacks.py      # Dash callbacks
+|   ├── utils.py 
 │   └── assets/           # Static files and screenshots
 ├── tests/
 │   └── test_smoke.py     # Smoke tests
 ├── .github/
 │   └── workflows/
 │       └── ci.yml        # GitHub Actions CI workflow
+├── run.py            # Entry point (local dev)
 ├── conftest.py           # Pytest path config
 ├── requirements.txt      # Python dependencies
 └── .python-version       # Pinned Python version
