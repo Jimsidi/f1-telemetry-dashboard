@@ -3,6 +3,7 @@
 A Dash app that loads telemetry data from Formula 1 sessions using FastF1.
 
 ![CI](https://github.com/Jimsidi/f1-telemetry-dashboard/actions/workflows/ci.yml/badge.svg)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
 ## Features
 
@@ -23,7 +24,7 @@ A Dash app that loads telemetry data from Formula 1 sessions using FastF1.
 
 Deployed on Render: https://f1-telemetry-dashboard-bao9.onrender.com/
 
-> Note: the app may take ~30 seconds to wake up on first load — Render's free tier spins down after inactivity.
+> Note: the app may take ~30 seconds to wake up on first load — Render's free tier spins down after inactivity. Loading full race sessions may be slow due to memory constraints on the free tier.
 
 ## Screenshots
 
@@ -65,7 +66,7 @@ f1-telemetry-dashboard/
 │   ├── __init__.py       # App initialization
 │   ├── layout.py         # UI layout
 │   ├── callbacks.py      # Dash callbacks
-|   ├── utils.py 
+|   ├── utils.py          # FastF1 session loading
 │   └── assets/           # Static files and screenshots
 ├── tests/
 │   └── test_smoke.py     # Smoke tests
@@ -76,3 +77,7 @@ f1-telemetry-dashboard/
 ├── conftest.py           # Pytest path config
 ├── requirements.txt      # Python dependencies
 └── .python-version       # Pinned Python version
+
+## Contributing
+
+Branches are required for all changes — direct pushes to `main` are blocked. Open a PR and CI must pass before merging.
