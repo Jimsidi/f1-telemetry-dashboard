@@ -72,7 +72,7 @@ f1-telemetry-dashboard/
 ├── .github/
 │   └── workflows/
 │       └── ci.yml        # GitHub Actions CI workflow
-├── run.py            # Entry point (local dev)
+├── run.py                # Entry point (local dev)
 ├── conftest.py           # Pytest path config
 ├── requirements.txt      # Python dependencies
 └── .python-version       # Pinned Python version
