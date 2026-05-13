@@ -9,6 +9,7 @@ fastf1.Cache.enable_cache("app/cache_dir")
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], suppress_callback_exceptions=True)
 app.title = "F1 Telemetry Comparison"
+server = app.server  # ← add this line
 
 from .layout import layout
 from .callbacks import register_callbacks
