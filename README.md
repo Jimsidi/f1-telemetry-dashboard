@@ -77,6 +77,7 @@ f1-telemetry-dashboard/
 ├── conftest.py           # Pytest path config
 ├── requirements.txt      # Python dependencies
 └── .python-version       # Pinned Python version
+```
 
 ## Contributing
 
